@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useWatchlist } from "@/hooks/use-watchlist";
+import { useScreenerPresets } from "@/hooks/use-screener-presets";
 import type {
   ScreenerFilters,
   ScreenerResult,
@@ -54,6 +55,8 @@ export default function ScreenerPage() {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   const { add, has } = useWatchlist();
+  const { presets, save: savePreset, remove: removePreset } = useScreenerPresets();
+  const [presetName, setPresetName] = useState("");
 
   function setField(field: keyof ScreenerFilters, value: string) {
     setFilters((prev) => ({ ...prev, [field]: value }));
@@ -213,13 +216,60 @@ export default function ScreenerPage() {
             </div>
           </div>
 
-          <div className="mt-4 flex gap-2">
+          {presets.length > 0 && (
+            <div className="mt-4">
+              <label className="mb-1 block text-xs text-muted-foreground">프리셋 불러오기</label>
+              <div className="flex flex-wrap gap-2">
+                {presets.map((p) => (
+                  <div key={p.id} className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setFilters(p.filters)}
+                      className="rounded-lg border border-border bg-muted/50 px-2.5 py-1 text-xs hover:bg-muted transition-colors"
+                    >
+                      {p.name}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removePreset(p.id)}
+                      className="rounded text-xs text-muted-foreground hover:text-destructive transition-colors"
+                      aria-label={`${p.name} 삭제`}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="mt-4 flex flex-wrap items-center gap-2">
             <Button onClick={search} disabled={loading}>
               {loading ? "검색 중..." : "검색"}
             </Button>
             <Button variant="outline" onClick={reset}>
               초기화
             </Button>
+            <div className="ml-auto flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="프리셋 이름"
+                value={presetName}
+                onChange={(e) => setPresetName(e.target.value)}
+                className="h-8 rounded-lg border border-border bg-background px-3 text-sm w-32"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!presetName.trim()}
+                onClick={() => {
+                  const saved = savePreset(presetName.trim(), filters);
+                  if (saved) setPresetName("");
+                }}
+              >
+                프리셋 저장
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
