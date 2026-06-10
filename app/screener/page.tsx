@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -47,10 +48,13 @@ function fmt(n: number): string {
 }
 
 export default function ScreenerPage() {
+  const router = useRouter();
+  const [tickerInput, setTickerInput] = useState("");
   const [filters, setFilters] = useState<ScreenerFilters>(DEFAULT_FILTERS);
   const [results, setResults] = useState<ScreenerResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [screenerError, setScreenerError] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("marketCap");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
@@ -65,6 +69,7 @@ export default function ScreenerPage() {
   async function search() {
     setLoading(true);
     setSearched(true);
+    setScreenerError(false);
     try {
       const params = new URLSearchParams({ limit: String(RESULT_LIMIT) });
       if (filters.exchange) params.set("exchange", filters.exchange);
@@ -75,6 +80,11 @@ export default function ScreenerPage() {
       if (filters.priceMax) params.set("priceLowerThan", filters.priceMax);
 
       const res = await fetch(`/api/screener?${params}`);
+      if (res.status === 402 || res.status === 403) {
+        setScreenerError(true);
+        setResults([]);
+        return;
+      }
       const data: ScreenerResult[] = await res.json();
       setResults(Array.isArray(data) ? data : []);
     } catch {
@@ -134,7 +144,32 @@ export default function ScreenerPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">종목 스크리너</h1>
+      <h1 className="mb-4 text-2xl font-bold">종목 스크리너</h1>
+
+      <Card className="mb-4">
+        <CardContent className="pt-4">
+          <p className="mb-2 text-xs font-medium text-muted-foreground">티커 직접 검색</p>
+          <form
+            className="flex gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const t = tickerInput.trim().toUpperCase();
+              if (t) router.push(`/stock/${t}`);
+            }}
+          >
+            <input
+              type="text"
+              placeholder="예: AAPL, MSFT, TSLA"
+              value={tickerInput}
+              onChange={(e) => setTickerInput(e.target.value.toUpperCase())}
+              className="h-8 flex-1 rounded-lg border border-border bg-background px-3 text-sm"
+            />
+            <Button type="submit" disabled={!tickerInput.trim()}>
+              이동
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       <Card className="mb-6">
         <CardContent className="pt-4">
@@ -274,7 +309,16 @@ export default function ScreenerPage() {
         </CardContent>
       </Card>
 
-      {searched && !loading && results.length === 0 && (
+      {searched && !loading && screenerError && (
+        <div className="rounded-xl border border-border bg-muted/30 py-8 text-center">
+          <p className="mb-1 text-sm font-medium">스크리너 기능은 FMP 유료 플랜 필요</p>
+          <p className="text-xs text-muted-foreground">
+            위의 티커 직접 검색으로 종목 상세 페이지에 접근하세요
+          </p>
+        </div>
+      )}
+
+      {searched && !loading && !screenerError && results.length === 0 && (
         <p className="py-12 text-center text-sm text-muted-foreground">
           조건에 맞는 종목이 없습니다
         </p>

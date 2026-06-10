@@ -229,8 +229,8 @@ function BalanceTab({ ticker }: { ticker: string }) {
 interface CashFlowItem {
   date: string;
   operatingCashFlow: number;
-  investingCashFlow: number;
-  financingCashFlow: number;
+  netCashProvidedByInvestingActivities: number;
+  netCashProvidedByFinancingActivities: number;
 }
 
 function CashFlowTab({ ticker }: { ticker: string }) {
@@ -252,8 +252,8 @@ function CashFlowTab({ ticker }: { ticker: string }) {
   const chartData = [...data].reverse().map((d) => ({
     year: fmtYear(d.date),
     영업: d.operatingCashFlow,
-    투자: d.investingCashFlow,
-    재무: d.financingCashFlow,
+    투자: d.netCashProvidedByInvestingActivities,
+    재무: d.netCashProvidedByFinancingActivities,
   }));
 
   return (
@@ -276,8 +276,8 @@ function CashFlowTab({ ticker }: { ticker: string }) {
         rows={data.map((d) => [
           fmtYear(d.date),
           fmtAmount(d.operatingCashFlow),
-          fmtAmount(d.investingCashFlow),
-          fmtAmount(d.financingCashFlow),
+          fmtAmount(d.netCashProvidedByInvestingActivities),
+          fmtAmount(d.netCashProvidedByFinancingActivities),
         ])}
       />
     </div>
@@ -286,12 +286,12 @@ function CashFlowTab({ ticker }: { ticker: string }) {
 
 interface RatiosItem {
   date: string;
-  priceEarningsRatio: number;
+  priceToEarningsRatio: number;
   priceToBookRatio: number;
-  returnOnEquity: number;
-  returnOnAssets: number;
+  netProfitMargin: number;
   operatingProfitMargin: number;
-  debtEquityRatio: number;
+  debtToEquityRatio: number;
+  returnOnAssets: number;
 }
 
 function RatiosTab({ ticker }: { ticker: string }) {
@@ -312,15 +312,15 @@ function RatiosTab({ ticker }: { ticker: string }) {
 
   return (
     <DataTable
-      headers={["연도", "PER", "PBR", "ROE", "ROA", "영업이익률", "부채비율"]}
+      headers={["연도", "PER", "PBR", "순이익률", "ROA", "영업이익률", "부채비율"]}
       rows={data.map((d) => [
         fmtYear(d.date),
-        fmtRatio(d.priceEarningsRatio),
+        fmtRatio(d.priceToEarningsRatio),
         fmtRatio(d.priceToBookRatio),
-        fmtPct(d.returnOnEquity),
+        fmtPct(d.netProfitMargin),
         fmtPct(d.returnOnAssets),
         fmtPct(d.operatingProfitMargin),
-        fmtRatio(d.debtEquityRatio),
+        fmtRatio(d.debtToEquityRatio),
       ])}
     />
   );
