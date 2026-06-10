@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { TrendingUp } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
 
 const NAV_ITEMS = [
   { href: "/", label: "홈" },
@@ -13,6 +14,7 @@ const NAV_ITEMS = [
 
 export function Header() {
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur">
@@ -37,6 +39,19 @@ export function Header() {
             </Link>
           ))}
         </nav>
+        {session && (
+          <div className="ml-auto flex items-center gap-3">
+            <span className="text-xs text-muted-foreground hidden sm:block">
+              {session.user.email}
+            </span>
+            <button
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              className="rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+            >
+              로그아웃
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );

@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/header";
+import { AuthSessionProvider } from "@/components/session-provider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -28,10 +29,12 @@ export default function RootLayout({
   return (
     <html lang="ko" className={cn("dark", geistSans.variable, geistMono.variable)}>
       <body className="min-h-screen bg-background font-sans antialiased">
-        <Header />
-        <main className="container mx-auto px-4 py-8">
-          {children}
-        </main>
+        <AuthSessionProvider>
+          <Header />
+          <main className="container mx-auto px-4 py-8">
+            {children}
+          </main>
+        </AuthSessionProvider>
       </body>
     </html>
   );

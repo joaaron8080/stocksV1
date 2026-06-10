@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(gh auth *)"
+      "Bash(gh auth *)",
+      "PowerShell(gh issue *)",
+      "PowerShell(Invoke-RestMethod \"https://financialmodelingprep.com/stable/cash-flow-statement?symbol=AAPL&limit=1&apikey=Oew8ncRNIfoly7hi6VoJYk11uRV1ZOEJ\" | ConvertTo-Json -Depth 3 | Select-Object -First 40)"
     ]
   }
 }

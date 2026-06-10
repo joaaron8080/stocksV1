@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { useScreenerPresets } from "@/hooks/use-screener-presets";
+import { BookmarkIcon } from "lucide-react";
 import type {
   ScreenerFilters,
   ScreenerResult,
@@ -58,6 +59,12 @@ export default function ScreenerPage() {
   const [sortKey, setSortKey] = useState<SortKey>("marketCap");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
+  const [saving, setSaving] = useState(false);
+  const [saveName, setSaveName] = useState("");
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveDuplicate, setSaveDuplicate] = useState<string | null>(null);
+  const [cacheDate, setCacheDate] = useState<string | null>(null);
+
   const { add, has } = useWatchlist();
   const { presets, save: savePreset, remove: removePreset } = useScreenerPresets();
   const [presetName, setPresetName] = useState("");
@@ -70,6 +77,7 @@ export default function ScreenerPage() {
     setLoading(true);
     setSearched(true);
     setScreenerError(false);
+    setCacheDate(null);
     try {
       const params = new URLSearchParams({ limit: String(RESULT_LIMIT) });
       if (filters.exchange) params.set("exchange", filters.exchange);
@@ -85,6 +93,8 @@ export default function ScreenerPage() {
         setResults([]);
         return;
       }
+      const cacheHit = res.headers.get("X-Cache") === "HIT";
+      if (cacheHit) setCacheDate(res.headers.get("X-Cache-Date"));
       const data: ScreenerResult[] = await res.json();
       setResults(Array.isArray(data) ? data : []);
     } catch {
@@ -98,6 +108,32 @@ export default function ScreenerPage() {
     setFilters(DEFAULT_FILTERS);
     setResults([]);
     setSearched(false);
+    setSaveSuccess(false);
+    setSaveDuplicate(null);
+    setCacheDate(null);
+  }
+
+  async function saveSnapshot(overrideName?: string) {
+    const name = overrideName ?? saveName.trim();
+    if (!name || results.length === 0) return;
+    setSaving(true);
+    setSaveDuplicate(null);
+    try {
+      const res = await fetch("/api/screener/saved", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, filters, results }),
+      });
+      if (res.status === 409) {
+        const body = await res.json();
+        setSaveDuplicate(body.existingName ?? "이전 저장");
+        return;
+      }
+      if (!overrideName) setSaveName("");
+      setSaveSuccess(true);
+    } finally {
+      setSaving(false);
+    }
   }
 
   function toggleSort(key: SortKey) {
@@ -322,6 +358,59 @@ export default function ScreenerPage() {
         <p className="py-12 text-center text-sm text-muted-foreground">
           조건에 맞는 종목이 없습니다
         </p>
+      )}
+
+      {cacheDate && (
+        <div className="mb-3 flex items-center justify-between gap-3 rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-3 py-2">
+          <p className="text-xs text-yellow-600 dark:text-yellow-400">
+            ⚠ FMP API 미접속 — DB 캐시 결과 표시 중 (저장일:{" "}
+            {new Date(cacheDate).toLocaleString("ko-KR")})
+          </p>
+          <Button
+            size="xs"
+            variant="outline"
+            disabled={saving}
+            onClick={() =>
+              saveSnapshot(`캐시 ${new Date(cacheDate).toLocaleDateString("ko-KR")}`)
+            }
+            className="shrink-0 border-yellow-500/40 text-yellow-700 hover:bg-yellow-500/20 dark:text-yellow-400"
+          >
+            <BookmarkIcon className="mr-1 h-3 w-3" />
+            캐시 저장
+          </Button>
+        </div>
+      )}
+
+      {sorted.length > 0 && (
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <input
+            type="text"
+            placeholder="저장할 이름 입력"
+            value={saveName}
+            onChange={(e) => { setSaveName(e.target.value); setSaveSuccess(false); }}
+            className="h-8 rounded-lg border border-border bg-background px-3 text-sm w-40"
+          />
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!saveName.trim() || saving}
+            onClick={() => saveSnapshot()}
+          >
+            <BookmarkIcon className="mr-1 h-3.5 w-3.5" />
+            {saving ? "저장 중..." : "결과 저장"}
+          </Button>
+          {saveSuccess && (
+            <span className="text-xs text-green-600">저장됨 ✓</span>
+          )}
+          {saveDuplicate && (
+            <span className="text-xs text-yellow-600">
+              이미 저장됨 — &quot;{saveDuplicate}&quot;
+            </span>
+          )}
+          <Link href="/screener/saved" className="ml-auto text-xs text-muted-foreground hover:text-foreground underline">
+            저장된 검색 보기 →
+          </Link>
+        </div>
       )}
 
       {sorted.length > 0 && (

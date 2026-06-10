@@ -1,0 +1,24 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./screener.db"
+}
+
+model ScreenerSnapshot {
+  id          Int      @id @default(autoincrement())
+  name        String
+  searchedAt  DateTime @default(now())
+  filters     String
+  results     String
+  resultCount Int
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
