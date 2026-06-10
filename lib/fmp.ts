@@ -1,7 +1,5 @@
-import { unstable_cache } from "next/cache";
-
 const FMP_BASE = "https://financialmodelingprep.com/stable";
-const CACHE_TTL = 86400; // 24h
+const CACHE_TTL = 86400;
 
 function getApiKey(): string {
   const key = process.env.FMP_API_KEY;
@@ -13,10 +11,13 @@ interface FmpResponse {
   value?: unknown[];
 }
 
-async function fetchFmp(path: string): Promise<unknown[]> {
+async function fetchFmp(
+  path: string,
+  options?: RequestInit
+): Promise<unknown[]> {
   const key = getApiKey();
   const url = `${FMP_BASE}${path}${path.includes("?") ? "&" : "?"}apikey=${key}`;
-  const res = await fetch(url);
+  const res = await fetch(url, options);
   if (!res.ok) {
     throw new Error(`FMP ${path} → ${res.status} ${res.statusText}`);
   }
@@ -28,34 +29,34 @@ async function fetchFmp(path: string): Promise<unknown[]> {
   return [];
 }
 
+const CACHED: RequestInit = { next: { revalidate: CACHE_TTL } } as RequestInit;
+const NO_CACHE: RequestInit = { cache: "no-store" };
+
 export async function getScreener(params: Record<string, string>) {
   const qs = new URLSearchParams(params).toString();
-  return fetchFmp(`/company-screener${qs ? `?${qs}` : ""}`);
+  return fetchFmp(`/company-screener${qs ? `?${qs}` : ""}`, NO_CACHE);
 }
 
-const cachedFetch = (path: string) =>
-  unstable_cache(() => fetchFmp(path), [path], { revalidate: CACHE_TTL })();
-
 export async function getProfile(ticker: string) {
-  return cachedFetch(`/profile?symbol=${ticker}`);
+  return fetchFmp(`/profile?symbol=${ticker}`, CACHED);
 }
 
 export async function getQuote(ticker: string) {
-  return fetchFmp(`/quote?symbol=${ticker}`);
+  return fetchFmp(`/quote?symbol=${ticker}`, NO_CACHE);
 }
 
 export async function getIncomeStatement(ticker: string) {
-  return cachedFetch(`/income-statement?symbol=${ticker}&limit=5`);
+  return fetchFmp(`/income-statement?symbol=${ticker}&limit=5`, CACHED);
 }
 
 export async function getBalanceSheet(ticker: string) {
-  return cachedFetch(`/balance-sheet-statement?symbol=${ticker}&limit=5`);
+  return fetchFmp(`/balance-sheet-statement?symbol=${ticker}&limit=5`, CACHED);
 }
 
 export async function getCashFlow(ticker: string) {
-  return cachedFetch(`/cash-flow-statement?symbol=${ticker}&limit=5`);
+  return fetchFmp(`/cash-flow-statement?symbol=${ticker}&limit=5`, CACHED);
 }
 
 export async function getRatios(ticker: string) {
-  return cachedFetch(`/ratios?symbol=${ticker}&limit=5`);
+  return fetchFmp(`/ratios?symbol=${ticker}&limit=5`, CACHED);
 }
