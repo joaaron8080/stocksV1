@@ -9,7 +9,6 @@ export interface ScreenerResult {
   lastAnnualDividend: number;
   volume: number;
   exchange: string;
-  exchangeShortName: string;
   country: string;
   isEtf: boolean;
   isActivelyTrading: boolean;

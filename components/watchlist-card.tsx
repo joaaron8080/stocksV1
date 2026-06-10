@@ -9,7 +9,7 @@ import type { WatchlistItem } from "@/lib/watchlist";
 
 interface QuoteData {
   price: number;
-  changesPercentage: number;
+  changePercentage: number;
 }
 
 interface WatchlistCardProps {
@@ -29,7 +29,7 @@ export function WatchlistCard({ item, onRemove }: WatchlistCardProps) {
       .catch(() => {});
   }, [item.ticker]);
 
-  const isPositive = quote && quote.changesPercentage >= 0;
+  const isPositive = quote && quote.changePercentage >= 0;
 
   return (
     <Card className="hover:ring-primary/40 transition-all">
@@ -61,7 +61,7 @@ export function WatchlistCard({ item, onRemove }: WatchlistCardProps) {
             </span>
             <Badge variant={isPositive ? "default" : "destructive"}>
               {isPositive ? "+" : ""}
-              {quote.changesPercentage.toFixed(2)}%
+              {quote.changePercentage.toFixed(2)}%
             </Badge>
           </div>
         ) : (

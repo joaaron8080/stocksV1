@@ -27,7 +27,7 @@ function SP500Banner() {
     return <div className="mb-8 h-16 animate-pulse rounded-xl bg-muted" />;
   }
 
-  const isPositive = quote.changesPercentage >= 0;
+  const isPositive = quote.changePercentage >= 0;
 
   return (
     <Card className="mb-8">
@@ -41,7 +41,7 @@ function SP500Banner() {
         <div className="flex flex-col items-end gap-1">
           <Badge variant={isPositive ? "default" : "destructive"} className="text-sm">
             {isPositive ? "+" : ""}
-            {quote.changesPercentage.toFixed(2)}%
+            {quote.changePercentage.toFixed(2)}%
           </Badge>
           <span className="text-xs text-muted-foreground tabular-nums">
             {isPositive ? "+" : ""}
@@ -73,7 +73,7 @@ function WatchlistGrid({ tickers }: { tickers: { ticker: string; companyName: st
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {tickers.map(({ ticker, companyName }) => {
         const q = quotes[ticker];
-        const isPositive = q && q.changesPercentage >= 0;
+        const isPositive = q && q.changePercentage >= 0;
         return (
           <Link key={ticker} href={`/stock/${ticker}`}>
             <Card className="h-full hover:ring-primary/40 transition-all cursor-pointer">
@@ -89,7 +89,7 @@ function WatchlistGrid({ tickers }: { tickers: { ticker: string; companyName: st
                     </span>
                     <Badge variant={isPositive ? "default" : "destructive"}>
                       {isPositive ? "+" : ""}
-                      {q.changesPercentage.toFixed(2)}%
+                      {q.changePercentage.toFixed(2)}%
                     </Badge>
                   </div>
                 ) : (

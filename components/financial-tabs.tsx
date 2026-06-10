@@ -95,7 +95,7 @@ function DataTable({
               {row.map((cell, j) => (
                 <td
                   key={j}
-                  className="px-3 py-2 tabular-nums first:text-left last:text-right"
+                  className="px-3 py-2 tabular-nums text-right first:text-left"
                 >
                   {cell ?? "—"}
                 </td>
@@ -342,16 +342,16 @@ const TABS = [
 
 export function FinancialTabs({ ticker }: FinancialTabsProps) {
   return (
-    <Tabs defaultValue="income">
-      <TabsList className="w-full justify-start">
+    <Tabs defaultValue="income" className="flex-col gap-4">
+      <TabsList className="h-auto w-full flex-wrap gap-1 p-1">
         {TABS.map((tab) => (
-          <TabsTrigger key={tab.value} value={tab.value}>
+          <TabsTrigger key={tab.value} value={tab.value} className="flex-1 basis-[calc(50%-0.25rem)] sm:flex-none sm:basis-auto">
             {tab.label}
           </TabsTrigger>
         ))}
       </TabsList>
       {TABS.map((tab) => (
-        <TabsContent key={tab.value} value={tab.value} className="mt-6">
+        <TabsContent key={tab.value} value={tab.value}>
           {TAB_COMPONENTS[tab.value](ticker)}
         </TabsContent>
       ))}

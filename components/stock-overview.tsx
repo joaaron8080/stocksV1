@@ -26,7 +26,7 @@ export function StockOverview({ profile }: StockOverviewProps) {
   }, [profile.symbol]);
 
   const price = quote?.price ?? profile.price;
-  const changesPct = quote?.changesPercentage ?? null;
+  const changesPct = quote?.changePercentage ?? null;
   const isPositive = changesPct !== null && changesPct >= 0;
 
   return (
@@ -35,8 +35,8 @@ export function StockOverview({ profile }: StockOverviewProps) {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-3xl font-bold">{profile.symbol}</h1>
-            {profile.exchangeShortName && (
-              <Badge variant="outline">{profile.exchangeShortName}</Badge>
+            {profile.exchange && (
+              <Badge variant="outline">{profile.exchange}</Badge>
             )}
             {profile.sector && (
               <Badge variant="secondary">{profile.sector}</Badge>

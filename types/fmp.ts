@@ -1,11 +1,10 @@
 export interface StockProfile {
   symbol: string;
   price: number;
-  changes: number;
+  change: number;
   companyName: string;
   currency: string;
   exchange: string;
-  exchangeShortName: string;
   industry: string;
   sector: string;
   description: string;
@@ -22,7 +21,7 @@ export interface StockQuote {
   symbol: string;
   name: string;
   price: number;
-  changesPercentage: number;
+  changePercentage: number;
   change: number;
   dayLow: number;
   dayHigh: number;
